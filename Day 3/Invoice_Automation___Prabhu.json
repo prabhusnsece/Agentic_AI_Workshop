@@ -1,0 +1,483 @@
+{
+  "name": "Invoice Automation - Prabhu",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "id": "0ef450d3-0980-4267-b4ff-76e693221b66",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ new Date($node['Invoice'].json['Due Date'].split('T')[0]).setHours(0,0,0,0) }}",
+              "value2": "={{ new Date('2025-06-11').setHours(0,0,0,0) }}"
+            }
+          ],
+          "boolean": [
+            {
+              "value1": "={{ $node['Invoice'].json['Payment Status'] === 'Unpaid' }}",
+              "value2": "={{ true }}"
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{ $node['Invoice'].json['Due Date'] }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "a3f0a500-2151-4bda-a425-bdd5f59efc4a",
+      "name": "Filter Overdue Invoices",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        140,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $node['Merge'].json['Invoice Number'] }}",
+              "value2": "={{ $node['Check Payment Confirmations'].json['Invoice Number'] }}"
+            }
+          ]
+        }
+      },
+      "id": "7cb6231b-967f-4ec5-8779-b815190e4218",
+      "name": "Match Payments",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        440,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "aa84f545-d06d-4cab-9236-7ee303d6fc26",
+      "name": "NoOp",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        820,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant tasked with drafting professional email reminders for overdue invoices. For each invoice, generate a personalized email addressed to the client using the following details:\n\n- **Client Name**: {{$node['Invoice'].json['Client Name']}}\n- **Client Email**: {{$node['Invoice'].json['Client Email']}}\n- **Invoice Number**: {{$node['Invoice'].json['Invoice Number']}}\n- **Due Date**: {{$node['Invoice'].json['Due Date']}}\n- **Amount**: {{$node['Invoice'].json['Amount']}}\n\nThe email should be polite, concise, and professional, reminding the client of the overdue payment and requesting immediate settlement. Include a subject line and a signature from \"InvoiceSync Solutions\". Return the email content and subject line in JSON format like this:\n```json\n{\n  \"subject\": \"Reminder: Invoice {{ $node['Invoice'].json['Invoice Number'] }} Overdue\",\n  \"body\": \"Dear [Client Name],\\n\\nWe hope this message finds you well. This is a friendly reminder that Invoice {{ $node['Invoice'].json['Invoice Number'] }} for ${{ $node['Invoice'].json['Amount'] }} was due on {{ $node['Invoice'].json['Due Date'] }} and remains unpaid.\\n\\nPlease arrange payment at your earliest convenience. If you have already made the payment, kindly disregard this email. For any questions, contact us at support@invoicesync.com.\\n\\nThank you,\\nInvoiceSync Solutions\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        360,
+        60
+      ],
+      "id": "f5f1e16d-a0cd-4bc0-92b0-60db3357404b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Filter Overdue Invoices').item.json['Client Email'] }}",
+        "subject": "Reminder: Invoice  Overdue",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        120
+      ],
+      "id": "4b17d5fe-be03-4a3f-a8d6-56921e170f7b",
+      "name": "Gmail",
+      "webhookId": "cbb240c7-84e6-4085-8619-cee4f0b4fe3c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4",
+          "mode": "list",
+          "cachedResultName": "Invoice Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -160,
+        100
+      ],
+      "id": "52e75664-184e-41ca-935e-d4ae04907b74",
+      "name": "Invoice",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TiD2VgGW0v84PKDC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        360,
+        340
+      ],
+      "id": "3ea5cc65-9be3-4b9d-a3f2-bd350df4bce2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XboFUdxp74KnLq3d",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1EJVr1XwVQv7QoSC5bXkFjSNwLQ3go56UA_uA8qprUUQ",
+          "mode": "list",
+          "cachedResultName": "Payments Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EJVr1XwVQv7QoSC5bXkFjSNwLQ3go56UA_uA8qprUUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1EJVr1XwVQv7QoSC5bXkFjSNwLQ3go56UA_uA8qprUUQ/edit#gid=0"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -140,
+        440
+      ],
+      "id": "9d3c1cd3-0b06-4832-8823-75e2f838ea02",
+      "name": "Check Payment Confirmations",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TiD2VgGW0v84PKDC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "SELECT i.*, p.`Payment Date`, p.Amount AS Payment_Amount\nFROM input1 AS i\nINNER JOIN input2 AS p\nON i.`Invoice Number` = p.`Invoice Number`",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        100,
+        440
+      ],
+      "id": "b0c7b62e-12e3-4d6f-97b5-3e3beecab806",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4",
+          "mode": "list",
+          "cachedResultName": "Invoice Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ystEjQeEJCyCvCHbnFsnw3UrzihWWVqE5PU174HcYg4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rowId": "={{$node['Match Payments'].json['rowId']}}",
+            "Payment Status": "Paid",
+            "Payment Date": "={{$node['Match Payments'].json['Payment Date']}}"
+          },
+          "matchingColumns": [
+            "rowId"
+          ],
+          "schema": [
+            {
+              "id": "rowId",
+              "displayName": "rowId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Number",
+              "displayName": "Invoice Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Client Name",
+              "displayName": "Client Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Client Email",
+              "displayName": "Client Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Due Date",
+              "displayName": "Due Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Payment Status",
+              "displayName": "Payment Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Payment Date",
+              "displayName": "Payment Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        760,
+        380
+      ],
+      "id": "ea0c23c5-5508-4636-af34-8db1123a8b17",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TiD2VgGW0v84PKDC",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Payments": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Overdue Invoices": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Payment Confirmations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice": {
+      "main": [
+        [
+          {
+            "node": "Filter Overdue Invoices",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Payment Confirmations": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Match Payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8f2851fe-ee15-4d72-8ad8-f690348af911",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46344966f3bcf44f899a73e4e7fbbbaa215ba43b202dad87ea154c669779d545"
+  },
+  "id": "wBKRQ4BxhRMIi2By",
+  "tags": []
+}
