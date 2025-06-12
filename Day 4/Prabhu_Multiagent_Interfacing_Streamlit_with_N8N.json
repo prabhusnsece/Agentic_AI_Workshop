@@ -1,0 +1,516 @@
+{
+  "name": "Prabhu Multiagent Interfacing Streamlit with N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "699feef9-0d51-4bdd-882f-0b61f47504b7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -840,
+        0
+      ],
+      "id": "0c9f4098-480e-416f-9abc-90cc2a7dd290",
+      "name": "Webhook",
+      "webhookId": "699feef9-0d51-4bdd-882f-0b61f47504b7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI email reviewer.  \n\nCheck the following email content and decide if it is a leave request for medical reasons (like sick leave, health issues, hospitalization, medical appointment etc.).If it has an emergency request do not consider it as a medical leave request.\n\nIf it is a medical leave request, respond with: Approved  \nIf it is not a medical leave request, respond with: Not Approved  \nEmail:\n{{ $json.body.email_content }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        0
+      ],
+      "id": "6a069aaa-aceb-44d9-99e3-54cf9534d31b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        300
+      ],
+      "id": "5a6d4843-5d03-4b50-bc20-14aceb2e3fb1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XboFUdxp74KnLq3d",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.cfc@snsgroups.com",
+        "subject": "Mail from N8N",
+        "emailType": "text",
+        "message": "=Your leave is {{ $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        -60
+      ],
+      "id": "59085dc8-cddb-4b9b-8fff-b7ec2b68e450",
+      "name": "Gmail",
+      "webhookId": "bd9696dc-a7b9-4742-ad8e-ef7083643c8e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0013d1f8-11bf-44bd-8fa6-d0771963f79e",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -100,
+        0
+      ],
+      "id": "0a3de3a8-4d80-4673-9e1e-153ec8b7eaa0",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.cfc@snsgroups.com",
+        "subject": "Mail from N8N",
+        "emailType": "text",
+        "message": "You have a emergency mail from . Kindly respond at the earliest.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        840,
+        100
+      ],
+      "id": "74f66666-d457-4c23-ae5c-d335d17c28d1",
+      "name": "Gmail1",
+      "webhookId": "22813376-aae0-4626-b2f9-0df78f524801",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    ...item.json,\n    output: (item.json.output || '').trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "e93be170-5967-4ca6-8f70-ebffe74c5d03",
+      "name": "Clean",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI email reviewer.\n\nCheck the following email content and decide if it mentions any emergencies (like accident, critical condition, immediate hospitalization, death etc.).Respond only if emergency as well as not approved is output from switch.\n\nIf it does, respond with: Emergency  \nIf it doesn't, respond with: No Emergency\n\nEmail:\n{{ $json.body.email_content }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        120,
+        100
+      ],
+      "id": "c94d13ae-2bc7-4c8e-b267-05533093da77",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI email reviewer.\n\nCheck the following email content and decide if it contains a request to schedule, arrange, or conduct a meeting, discussion, or appointment. This includes phrases like \"schedule a meeting\", \"arrange a discussion\", \"book a time\", \"meet tomorrow\", or any similar intent. Respond only if  Meeting Request as well as not approved is output from switch.\n\nIf the email contains a meeting request, respond with: Meeting Request  \nIf it does not, respond with: Not a Meeting  \n\nEmail:  \n{{ $json.body.email_content }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        200,
+        340
+      ],
+      "id": "ea50a91c-5a68-4969-93c7-69d252dc1242",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    ...item.json,\n    output: (item.json.output || '').trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        100
+      ],
+      "id": "edb02bd3-5eb2-4b31-81c9-c58c92b173bc",
+      "name": "Clean1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0013d1f8-11bf-44bd-8fa6-d0771963f79e",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Emergency",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        100
+      ],
+      "id": "f10e36c3-e140-4eb8-8a2d-f093620cebb5",
+      "name": "If1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        820,
+        260
+      ],
+      "id": "a9e94260-e65b-478f-bfe3-b35ca4f0abf0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    ...item.json,\n    output: (item.json.output || '').trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        400
+      ],
+      "id": "25d7332a-6156-4c65-9dc0-26ccbc18d237",
+      "name": "Clean2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0013d1f8-11bf-44bd-8fa6-d0771963f79e",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Meeting Request",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        760,
+        420
+      ],
+      "id": "2a3eff73-8685-4406-ac92-9e86422390d6",
+      "name": "If2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.cfc@snsgroups.com",
+        "subject": "Meeting Request",
+        "emailType": "text",
+        "message": "Hi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        440
+      ],
+      "id": "f3d4db5e-b21a-419c-8aff-d847731d5a09",
+      "name": "Gmail2",
+      "webhookId": "de461bad-a86c-46a4-b1bd-6b58f7e8eeec",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        840,
+        600
+      ],
+      "id": "9503660f-9562-42c4-b0e1-88e479e286a6",
+      "name": "No Operation, do nothing1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Clean1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        []
+      ]
+    },
+    "Clean1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Clean2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Gmail2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5441db00-624c-4b9d-8f7d-3b1a7da71075",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46344966f3bcf44f899a73e4e7fbbbaa215ba43b202dad87ea154c669779d545"
+  },
+  "id": "OmUoYzfXEaH53kng",
+  "tags": []
+}
