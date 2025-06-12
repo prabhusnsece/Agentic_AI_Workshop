@@ -1,0 +1,230 @@
+{
+  "name": "Prabhu Interfacing Streamlit with N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "699feef9-0d51-4bdd-882f-0b61f47504b7",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        0
+      ],
+      "id": "0c9f4098-480e-416f-9abc-90cc2a7dd290",
+      "name": "Webhook",
+      "webhookId": "699feef9-0d51-4bdd-882f-0b61f47504b7"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI email reviewer.  \n\nCheck the following email content and decide if it is a leave request for medical reasons (like sick leave, health issues, hospitalization, medical appointment etc.).  \n\nIf it is a medical leave request, respond with: Approved  \nIf it is not a medical leave request, respond with: Not Approved  \nEmail:\n{{ $json.body.email_content }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "6a069aaa-aceb-44d9-99e3-54cf9534d31b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        220
+      ],
+      "id": "5a6d4843-5d03-4b50-bc20-14aceb2e3fb1",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XboFUdxp74KnLq3d",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.cfc@snsgroups.com",
+        "subject": "Mail from N8N",
+        "emailType": "text",
+        "message": "=Your leave is {{ $('AI Agent').item.json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        -40
+      ],
+      "id": "59085dc8-cddb-4b9b-8fff-b7ec2b68e450",
+      "name": "Gmail",
+      "webhookId": "bd9696dc-a7b9-4742-ad8e-ef7083643c8e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0013d1f8-11bf-44bd-8fa6-d0771963f79e",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        0
+      ],
+      "id": "0a3de3a8-4d80-4673-9e1e-153ec8b7eaa0",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.cfc@snsgroups.com",
+        "subject": "Mail from N8N",
+        "emailType": "text",
+        "message": "Your leave request is not approved",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        100
+      ],
+      "id": "74f66666-d457-4c23-ae5c-d335d17c28d1",
+      "name": "Gmail1",
+      "webhookId": "22813376-aae0-4626-b2f9-0df78f524801",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  json: {\n    ...item.json,\n    output: (item.json.output || '').trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "e93be170-5967-4ca6-8f70-ebffe74c5d03",
+      "name": "Clean",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ac3c69d8-e364-4e4a-9d41-e7418d0c4cd0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46344966f3bcf44f899a73e4e7fbbbaa215ba43b202dad87ea154c669779d545"
+  },
+  "id": "OmUoYzfXEaH53kng",
+  "tags": []
+}
