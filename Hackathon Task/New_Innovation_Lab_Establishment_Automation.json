@@ -1,0 +1,634 @@
+{
+  "name": "New Innovation Lab Establishment Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "replaceText",
+        "presentationId": "1Q4lnaQRWQmSxjk3g8AqCnQUyBZfYcHgG-_vCFJHHyMc",
+        "textUi": {
+          "textValues": [
+            {
+              "pageObjectIds": [
+                "g36608b04967_1_0"
+              ],
+              "text": "{{SLIDE_4_CONTENT}}",
+              "replaceText": "={{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Create Google Slides",
+      "type": "n8n-nodes-base.googleSlides",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -20
+      ],
+      "id": "9eeace21-e563-4517-8da8-ee572c4b6b37",
+      "credentials": {
+        "googleSlidesOAuth2Api": {
+          "id": "2zyJC9UylA6pDIzw",
+          "name": "Google Slides account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "fileContent": "={{ $json.presentationId }}",
+        "name": "Proposal for CoE",
+        "options": {}
+      },
+      "name": "Share Pitch Deck",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -20
+      ],
+      "id": "726f2932-cf13-4130-bf94-84b2057c2820",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4XNmXTXwhSSk4Ghm",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1umzZrsqkxhnqTGzpfTJblmay-2YCTkIErKwQBMpabyc",
+          "mode": "list",
+          "cachedResultName": "Company",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umzZrsqkxhnqTGzpfTJblmay-2YCTkIErKwQBMpabyc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1umzZrsqkxhnqTGzpfTJblmay-2YCTkIErKwQBMpabyc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -620,
+        340
+      ],
+      "id": "21d56d88-29bb-406f-b3ab-4c31b83effcc",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TiD2VgGW0v84PKDC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI agent in an n8n workflow tasked with generating customized content for a Google Slides pitch deck titled \"Proposal for Setting up a Centre of Excellence (CoE)\" for SNS Institutions. The input data comes from a Google Sheet with the following columns: Company Name, Contact Name, Contact Email, LinkedIn Profile ID. The current data includes:\n\n- Company Name: {{ $json['Company Name'] }}\n- Contact Name: {{ $json['Contact Name'] }}\n- Contact Email: {{ $json['Contact Email'] }}\n- LinkedIn Profile ID: {{ $json['Linkedin Profile Id'] }}\n\nYour task is to:\n1. Use the SERP Node to analyze about the {{ $json['Company Name'] }} and the LinkedIn profile ({{ $json['Linkedin Profile Id'] }}) of the contact and gather insights about their role, expertise, and the company they work for ({{ $json['Company Name'] }}).\n2. Based on the analysis, generate tailored content for the following slide in the Google Slides presentation, ensuring alignment with the provided PowerPoint template structure:\n   - **Slide 4: Benefits for the Partnering Company**\n     - Customize 4-5 bullet points to highlight specific benefits for {{ $json['Company Name'] }} based on their industry, goals, or LinkedIn insights (e.g., access to talent aligned with their tech stack, brand visibility in SNS’s community, or R&D opportunities relevant to their focus).\n     - Use professional language, starting each bullet with \"•\".\n3. Ensure the content is professional, concise, and persuasive, addressing {{ $json['Contact Name'] }} and {{ $json['Company Name'] }} directly where appropriate.\n4. Use the placeholders {{ $json['Company Name'] }} and {{ $json['Contact Name'] }} to personalize the content, matching the template’s style (Arial font, professional tone).\n5. Output the content as raw JSON (no markdown fences, no extra text) in the following structure:\n\n{\n  \"slide4\": {\n    \"title\": \"Benefits for {{ $json['Company Name'] }}\",\n    \"content\": \"• Benefit 1\\n• Benefit 2\\n• Benefit 3\\n• Benefit 4\\n• Benefit 5\"\n  }\n}\n\n6. Validate the JSON output to ensure it is well-formed and contains all required fields before returning. Do not include any text, comments, or markdown outside the JSON structure. If LinkedIn data is limited, make reasonable assumptions based on the company’s name and industry context.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        -40
+      ],
+      "id": "d888b05e-0534-4cae-b4c4-2082fca49ea9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        500
+      ],
+      "id": "0670ca29-b2ed-428a-bd43-245939da8f95",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XboFUdxp74KnLq3d",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant responsible for drafting a professional and courteous email on behalf of SNS Institutions.\nThree Google Drive links containing tailored proposals have been generated for different companies, and a Google Sheet provides the corresponding company names and their contact email addresses. This information is merged and passed to you as input via n8n.\n\nYour task is to compose a formal, personalized email addressed to each company contact, clearly presenting:\n\nA polite greeting and brief introduction of SNS Institutions.\n\nA mention that the attached link contains a proposal document tailored for setting up a Centre of Excellence in collaboration with their organization.\n\nAn invitation for follow-up discussions or queries.\n\nA warm closing with SNS Institutions’ contact details. In addition, you should also schedule a follow-up meeting to discuss the collaboration in my google calendar. You can schedule the meeting as per your convenience.\n\nInput Variables:\n\ncompanyName: {{ $('Google Sheets').item.json['Company Name'] }}\n\ncontactEmail: {{ $('Google Sheets').item.json['Contact Email'] }}\n\nshareableLink: {{ $json.shareableLink }}\n\nExample expected output:\n{\n  \"subject\": \"Proposal for Centre of Excellence Collaboration - SNS Institutions\",\n  \"body\": \"Dear Vignesh,\\n\\nGreetings from SNS Institutions.\\n\\nWe hope this email finds you well. ... \\n\\n[Drive Link]\\n\\nWarm regards,\\nSNS Institutions\"\n}\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        820,
+        320
+      ],
+      "id": "91b1e516-987d-42ba-af35-21deb6312e64",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "prabhu.v.cfc@snsgroups.com",
+          "mode": "list",
+          "cachedResultName": "prabhu.v.cfc@snsgroups.com"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        660,
+        540
+      ],
+      "id": "c01ea1de-5a17-4795-9820-ff45ae7a0320",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Tk55vkbL0QCN9oTb",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI assistant responsible for summarizing the outreach activities conducted by SNS Institutions as part of the Centre of Excellence (CoE) collaboration initiative. Refer the input received from the previous agent: {{ $json.output }} and the previous workflow and generate the summary accordingly.\n\nThe activities alraedy done involves:\n\nGenerating and sharing customized proposal presentations via Google Drive links.\n\nSending formal email invitations to each company.\n\nScheduling follow-up meetings with their representatives.\n\nYou will receive as input a list of records containing the following details for each company:\n\ncompanyName\n\ncontactEmail\n\nproposalLink\n\nemailStatus\n\nmeetingStatus\n\nYour task is to:\n\nCompile a clean, well-formatted activity summary for each company.\n\nPresent it as a numbered list for easy reading.\n\nEnd with a professional closing statement inviting further instructions or feedback.\n\nTone:\nFormal, clear, executive-friendly, and progress-focused.\n\nExpected Output:\n\nA JSON object with:\n\nsubject: Subject line for the summary email.\n\nbody: Well-structured email body containing the consolidated activity summary.\n\nExample Output:\n\njson\nCopy\nEdit\n{\n  \"subject\": \"SNS Institutions: Centre of Excellence Collaboration – Progress Update\",\n  \"body\": \"Dear Sir,\\n\\nPlease find below the progress update regarding our CoE collaboration outreach efforts:\\n\\n1. **Company:** Meta\\n   - Email: contact@meta.com\\n   - Proposal Link: https://drive.google.com/file/abc123/view\\n   - Email Status: Sent\\n   - Meeting Status: Scheduled\\n\\n2. **Company:** Inmakes Learning Hub\\n   - Email: info@inmakes.com\\n   - Proposal Link: https://drive.google.com/file/def456/view\\n   - Email Status: Sent\\n   - Meeting Status: Scheduled\\n\\nWe will continue to coordinate with the respective companies and update you on further developments.\\n\\nWarm regards,\\nSNS Institutions CoE Coordination Team\"\n} {{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        700
+      ],
+      "id": "ce719ab6-92eb-4394-8702-be12c166fd62",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.ihub@snsgroups.com",
+        "subject": "Summary of Initiatives for CoE Establishment",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1820,
+        680
+      ],
+      "id": "fd4bf52d-a6e3-4b63-b7a3-e54bb95752c5",
+      "name": "Gmail1",
+      "webhookId": "61723c36-878a-4fe3-81e0-681d2efebb32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        480
+      ],
+      "id": "728ec158-64bb-418d-98ca-97b017cbebb5",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "xZ5DO2bQIS7QG5v3",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ { \"shareableLink\": \"https://drive.google.com/file/d/\" + $json[\"id\"] + \"/view?usp=sharing\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -20
+      ],
+      "id": "6702428a-fa24-4354-b094-52e1e2d0e300",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Contact Email'] }}",
+        "subject": "Proposal for Establishing CoE at SNS Institutions",
+        "emailType": "text",
+        "message": "={{ $json.body.replaceAll() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1420,
+        180
+      ],
+      "id": "70a538b6-8a87-41d7-8b1a-5364c492686b",
+      "name": "Gmail2",
+      "webhookId": "4ae5ebf4-b77c-4e3e-b217-8a7b7dbb74ed",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        880,
+        80
+      ],
+      "id": "7934f0ec-97e7-4bb1-8d21-82887ebbd6be",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "44fe0f4d-947f-424b-9661-79b708969b6d",
+              "leftValue": "={{ $json.labelIds[0] }}",
+              "rightValue": "SENT",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1640,
+        180
+      ],
+      "id": "62c641a4-ed6f-43fc-b180-60f06a106d3a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets').item.json['Contact Email'] }}",
+        "subject": "Gentle Reminder",
+        "emailType": "text",
+        "message": "=Dear {{ $('Google Sheets').item.json['Company Name'] }} Team,  This is a kind reminder regarding our earlier proposal for establishing a Centre of Excellence in collaboration with SNS Institutions.   We would be happy to discuss this opportunity with you at your convenience. Please let us know a suitable time for a follow-up discussion.  Warm regards,   SNS Institutions   [psbhu.v.cfc@snsgroups.com | +91-9944159722]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1740,
+        480
+      ],
+      "id": "4c805180-7d69-499b-bd1a-8733c0069201",
+      "name": "Gmail",
+      "webhookId": "fbfddce8-537b-4275-b564-701748c422e3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1460,
+        460
+      ],
+      "id": "fd23a591-04d2-4302-a8ea-d2d2ec686db2",
+      "name": "Wait",
+      "webhookId": "874b3e66-1387-440c-a794-05f9a00af6f0"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        320
+      ],
+      "id": "f65d1b22-417d-4200-8816-50d400f7b528",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Remove the ```json\\n and ``` wrappers\n  const rawJsonString = item.json.output.replace(/```json\\n/, '').replace(/```$/, '');\n  \n  // Parse the cleaned JSON string to an object\n  const parsed = JSON.parse(rawJsonString);\n\n  // Extract content from slide4\n  return {\n    json: {\n      content: parsed.slide4?.content ?? \"Content not found\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20,
+        -20
+      ],
+      "id": "f662093a-0b2e-4ba9-a7b7-3eb58294491b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items\n  .filter(item => item.json && item.json.output)\n  .map(item => {\n    const outputString = item.json.output;\n    const cleanedOutput = outputString.replace(/```json\\n?|```/g, \"\").trim();\n    let parsedOutput;\n    try {\n      parsedOutput = JSON.parse(cleanedOutput);\n      return {\n        json: {\n          body: parsedOutput.body\n        }\n      };\n    } catch (error) {\n      // Skip invalid JSON\n      return null;\n    }\n  })\n  .filter(item => item !== null);  // remove nulls from result\n\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        320
+      ],
+      "id": "33e694b4-73b9-4099-873a-58a342dc26b0",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1340,
+        -20
+      ],
+      "id": "cc3c9570-db25-433a-9e46-939b07f699ea",
+      "name": "Merge1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Google Slides": {
+      "main": [
+        [
+          {
+            "node": "Share Pitch Deck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share Pitch Deck": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create Google Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Gmail2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d8eb28d-6e18-46d7-ab92-3222ea7b9642",
+  "meta": {
+    "instanceId": "46344966f3bcf44f899a73e4e7fbbbaa215ba43b202dad87ea154c669779d545"
+  },
+  "id": "3HUmZOpvcxKE3siJ",
+  "tags": []
+}
