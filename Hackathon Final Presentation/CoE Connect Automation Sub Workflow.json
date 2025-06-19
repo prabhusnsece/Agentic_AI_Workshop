@@ -1,0 +1,135 @@
+{
+  "name": "My Sub-Workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        260,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17tvcF_p1YYULfSMeVvf5GjApMVl_yOE9NxUEiHd0kGU",
+          "mode": "list",
+          "cachedResultName": "Summary Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17tvcF_p1YYULfSMeVvf5GjApMVl_yOE9NxUEiHd0kGU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17tvcF_p1YYULfSMeVvf5GjApMVl_yOE9NxUEiHd0kGU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        580,
+        340
+      ],
+      "id": "49fdb6df-8e7b-441e-81b7-1914776c1c33",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "TiD2VgGW0v84PKDC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all rows fetched from the Google Sheet\nconst allRows = items;\n\n// Pick the last one\nconst lastRow = allRows[allRows.length - 1];\n\n// Return it as a single item\nreturn [lastRow];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        340
+      ],
+      "id": "a309428b-332d-4d7c-9901-e4038c1d022d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "prabhu.v.ihub@snsgroups.com",
+        "subject": "Summary Report",
+        "emailType": "text",
+        "message": "=Dear Sir,\n\n{{ $json.combinedSummary }}\n\nThanks & Regards,\nV.Prabhu\nInnovator-CFC",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1140,
+        340
+      ],
+      "id": "65557a78-bfa5-4226-817b-8ee364552871",
+      "name": "Gmail",
+      "webhookId": "53792d22-84c4-49f7-96b5-9d63ccf50f47",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Ypm6AGuJ5apwoHxm",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c71eaaf6-bc07-4ea8-a46d-150aaadb0847",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46344966f3bcf44f899a73e4e7fbbbaa215ba43b202dad87ea154c669779d545"
+  },
+  "id": "8jpMPaO8wQGN0fGa",
+  "tags": []
+}
